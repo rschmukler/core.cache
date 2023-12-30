@@ -281,7 +281,14 @@
                  t)
               ttl-ms))
          (contains? cache item)))
-  (hit [this item] this)
+  (hit [this item] this
+       (let [now (System/currentTimeMillis)
+             [kill-old q'] (key-killer-q ttl q ttl-ms now)]
+      (TTLCacheQ. (kill-old cache)
+                  (assoc (kill-old ttl) item [gen now])
+                  (conj q' [item gen now])
+                  (unchecked-inc gen)
+                  ttl-ms)))
   (miss [this item result]
     (let [now  (System/currentTimeMillis)
           [kill-old q'] (key-killer-q ttl q ttl-ms now)]

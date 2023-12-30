@@ -249,6 +249,14 @@
   (testing "TTL cache does not return a value that has expired."
     (let [C (ttl-cache-factory {} :ttl 500)]
       (is (nil? (-> C (assoc :a 1) (sleepy 700) (lookup :a))))))
+  (testing "TTL cache extends deadline on a hit"
+    (let [C (ttl-cache-factory {} :ttl 500)]
+      (is (some? (-> C
+                     (assoc :a 1)
+                     (sleepy 300)
+                     (hit :a)
+                     (sleepy 300)
+                     (lookup :a))))))
   (testing "TTL cache does not contain a value that was removed from underlying cache."
     (let [underlying-cache (lru-cache-factory {} :threshold 1)
           C (ttl-cache-factory underlying-cache :ttl 360000)]
